@@ -24,25 +24,41 @@ themeToggle.addEventListener('click', () => {
 function addNote(event) {
     event.preventDefault();
     
-    const input = document.getElementById("noteInput");
+    const titleInput = document.getElementById("noteTitle");
+    const textInput = document.getElementById("noteInput");
     const notesList = document.getElementById("notesList");
 
-    if (input.value.trim() === "") return;
+    if (titleInput.value.trim() === "" || textInput.value.trim() === "") return;
 
     const li = document.createElement("li");
-    li.textContent = input.value;
+    
+    // Create title element
+    const title = document.createElement("div");
+    title.className = "note-title";
+    title.textContent = titleInput.value;
+    
+    // Create content element
+    const content = document.createElement("div");
+    content.className = "note-content";
+    content.textContent = textInput.value;
     
     // Add delete button to each note
     const deleteBtn = document.createElement("button");
     deleteBtn.textContent = "Delete";
     deleteBtn.className = "delete-btn";
-    deleteBtn.addEventListener("click", () => li.remove());
+    deleteBtn.addEventListener("click", () => {
+        li.remove();
+        saveNotes();
+    });
     
+    li.appendChild(title);
+    li.appendChild(content);
     li.appendChild(deleteBtn);
     notesList.appendChild(li);
 
-    input.value = "";
-    input.focus();
+    titleInput.value = "";
+    textInput.value = "";
+    titleInput.focus();
     
     // Save notes to localStorage
     saveNotes();
@@ -54,9 +70,9 @@ function saveNotes() {
     const notes = [];
     
     notesList.querySelectorAll("li").forEach(li => {
-        // Get text without the delete button
-        const text = li.textContent.replace("Delete", "").trim();
-        notes.push(text);
+        const title = li.querySelector(".note-title").textContent;
+        const content = li.querySelector(".note-content").textContent;
+        notes.push({ title, content });
     });
     
     localStorage.setItem('notes', JSON.stringify(notes));
@@ -67,12 +83,18 @@ function loadNotes() {
     const saved = localStorage.getItem('notes');
     if (saved) {
         const notes = JSON.parse(saved);
-        notes.forEach(noteText => {
-            const input = document.getElementById("noteInput");
+        notes.forEach(note => {
             const notesList = document.getElementById("notesList");
             
             const li = document.createElement("li");
-            li.textContent = noteText;
+            
+            const title = document.createElement("div");
+            title.className = "note-title";
+            title.textContent = note.title;
+            
+            const content = document.createElement("div");
+            content.className = "note-content";
+            content.textContent = note.content;
             
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "Delete";
@@ -82,6 +104,8 @@ function loadNotes() {
                 saveNotes();
             });
             
+            li.appendChild(title);
+            li.appendChild(content);
             li.appendChild(deleteBtn);
             notesList.appendChild(li);
         });
