@@ -1,66 +1,273 @@
-// script.js
+// Dark mode toggle
+const themeToggle = document.getElementById('themeToggle');
 
-// Character Count Feature
-const characterCount = document.querySelector('#characterCount');
-
-function updateCharacterCount() {
-    const textArea = document.querySelector('#textArea');
-    characterCount.textContent = `Characters: ${textArea.value.length}`;
+const currentTheme = localStorage.getItem('theme') || 'light';
+if (currentTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeToggle.textContent = '☀️';
 }
 
-textArea.addEventListener('input', updateCharacterCount);
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    if (document.body.classList.contains('dark-mode')) {
+        themeToggle.textContent = '☀️';
+        localStorage.setItem('theme', 'dark');
+    } else {
+        themeToggle.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+    }
+});
 
-// Search Feature
-const searchInput = document.querySelector('#searchInput');
-const resultsContainer = document.querySelector('#results');
+// Character count
+const noteInput = document.getElementById("noteInput");
+const charCount = document.getElementById("charCount");
 
-function searchFunction() {
-    const query = searchInput.value.toLowerCase();
-    const items = Array.from(resultsContainer.children);
-    items.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(query) ? 'block' : 'none';
+if (noteInput) {
+    noteInput.addEventListener("input", () => {
+        charCount.textContent = noteInput.value.length;
     });
 }
 
-searchInput.addEventListener('input', searchFunction);
+// Search functionality
+const searchInput = document.getElementById("searchInput");
 
-// Edit Feature
-const editButton = document.querySelector('#editButton');
-const saveButton = document.querySelector('#saveButton');
-
-function enableEdit() {
-    textArea.disabled = false;
-    saveButton.style.display = 'block';
+if (searchInput) {
+    searchInput.addEventListener("input", filterNotes);
 }
 
-function saveEdit() {
-    textArea.disabled = true;
-    saveButton.style.display = 'none';
+function filterNotes() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const notes = document.querySelectorAll("#notesList li");
+    
+    notes.forEach(note => {
+        const title = note.querySelector(".note-title").textContent.toLowerCase();
+        const content = note.querySelector(".note-content").textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || content.includes(searchTerm)) {
+            note.style.display = "block";
+        } else {
+            note.style.display = "none";
+        }
+    });
 }
 
-editButton.addEventListener('click', enableEdit);
-saveButton.addEventListener('click', saveEdit);
+// Add note function
+function addNote(event) {
+    event.preventDefault();
+    
+    const titleInput = document.getElementById("noteTitle");
+    const textInput = document.getElementById("noteInput");
+    const notesList = document.getElementById("notesList");
 
-// Timestamps Feature
-const timestampDisplay = document.querySelector('#timestamp');
-function updateTimestamp() {
-    timestampDisplay.textContent = `Last edited: ${new Date().toISOString()}`;
+    if (titleInput.value.trim() === "" || textInput.value.trim() === "") return;
+
+    const li = document.createElement("li");
+    
+    // Create header with title and date
+    const header = document.createElement("div");
+    header.className = "note-header";
+    
+    const title = document.createElement("div");
+    title.className = "note-title";
+    title.textContent = titleInput.value;
+    
+    const date = document.createElement("div");
+    date.className = "note-date";
+    date.textContent = formatDate(new Date());
+    
+    header.appendChild(title);
+    header.appendChild(date);
+    
+    // Create content element
+    const content = document.createElement("div");
+    content.className = "note-content";
+    content.textContent = textInput.value;
+    
+    // Create action buttons
+    const actions = document.createElement("div");
+    actions.className = "note-actions";
+    
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
+    editBtn.className = "edit-btn";
+    editBtn.addEventListener("click", () => editNote(li));
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.className = "delete-btn";
+    deleteBtn.addEventListener("click", () => {
+        li.remove();
+        saveNotes();
+        updateEmptyState();
+    });
+    
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+    
+    li.appendChild(header);
+    li.appendChild(content);
+    li.appendChild(actions);
+    notesList.appendChild(li);
+
+    titleInput.value = "";
+    textInput.value = "";
+    charCount.textContent = "0";
+    titleInput.focus();
+    
+    saveNotes();
+    updateEmptyState();
 }
 
-saveButton.addEventListener('click', updateTimestamp);
+// Edit note function
+function editNote(liElement) {
+    const titleEl = liElement.querySelector(".note-title");
+    const contentEl = liElement.querySelector(".note-content");
+    const actionsEl = liElement.querySelector(".note-actions");
+    
+    const currentTitle = titleEl.textContent;
+    const currentContent = contentEl.textContent;
+    
+    titleEl.classList.add("hidden");
+    contentEl.classList.add("hidden");
+    actionsEl.classList.add("hidden");
+    
+    const editForm = document.createElement("div");
+    editForm.className = "edit-form";
+    
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.value = currentTitle;
+    titleInput.placeholder = "Edit title...";
+    
+    const contentInput = document.createElement("textarea");
+    contentInput.value = currentContent;
+    contentInput.placeholder = "Edit content...";
+    
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "Save";
+    saveBtn.addEventListener("click", () => {
+        if (titleInput.value.trim() === "" || contentInput.value.trim() === "") return;
+        
+        titleEl.textContent = titleInput.value;
+        contentEl.textContent = contentInput.value;
+        
+        titleEl.classList.remove("hidden");
+        contentEl.classList.remove("hidden");
+        actionsEl.classList.remove("hidden");
+        editForm.remove();
+        
+        saveNotes();
+    });
+    
+    const cancelBtn = document.createElement("button");
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.className = "cancel-btn";
+    cancelBtn.addEventListener("click", () => {
+        titleEl.classList.remove("hidden");
+        contentEl.classList.remove("hidden");
+        actionsEl.classList.remove("hidden");
+        editForm.remove();
+    });
+    
+    editForm.appendChild(titleInput);
+    editForm.appendChild(contentInput);
+    editForm.appendChild(saveBtn);
+    editForm.appendChild(cancelBtn);
+    
+    liElement.insertBefore(editForm, actionsEl.nextSibling);
+    titleInput.focus();
+}
 
-// Empty State Feature
-const emptyStateMessage = document.querySelector('#emptyState');
-function checkEmptyState() {
-    if (!textArea.value) {
-        emptyStateMessage.style.display = 'block';
+// Format date
+function formatDate(date) {
+    const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return date.toLocaleDateString('en-US', options);
+}
+
+// Update empty state
+function updateEmptyState() {
+    const notesList = document.getElementById("notesList");
+    const emptyState = document.getElementById("emptyState");
+    
+    if (notesList.children.length === 0) {
+        emptyState.classList.add("show");
     } else {
-        emptyStateMessage.style.display = 'none';
+        emptyState.classList.remove("show");
     }
 }
 
-textArea.addEventListener('input', checkEmptyState);
+// Save notes to localStorage
+function saveNotes() {
+    const notesList = document.getElementById("notesList");
+    const notes = [];
+    
+    notesList.querySelectorAll("li").forEach(li => {
+        const title = li.querySelector(".note-title").textContent;
+        const content = li.querySelector(".note-content").textContent;
+        const date = li.querySelector(".note-date").textContent;
+        notes.push({ title, content, date });
+    });
+    
+    localStorage.setItem('notes', JSON.stringify(notes));
+}
 
-// Initial check
-checkEmptyState();
+// Load notes from localStorage
+function loadNotes() {
+    const saved = localStorage.getItem('notes');
+    if (saved) {
+        const notes = JSON.parse(saved);
+        const notesList = document.getElementById("notesList");
+        
+        notes.forEach(note => {
+            const li = document.createElement("li");
+            
+            const header = document.createElement("div");
+            header.className = "note-header";
+            
+            const title = document.createElement("div");
+            title.className = "note-title";
+            title.textContent = note.title;
+            
+            const date = document.createElement("div");
+            date.className = "note-date";
+            date.textContent = note.date;
+            
+            header.appendChild(title);
+            header.appendChild(date);
+            
+            const content = document.createElement("div");
+            content.className = "note-content";
+            content.textContent = note.content;
+            
+            const actions = document.createElement("div");
+            actions.className = "note-actions";
+            
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.className = "edit-btn";
+            editBtn.addEventListener("click", () => editNote(li));
+            
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.className = "delete-btn";
+            deleteBtn.addEventListener("click", () => {
+                li.remove();
+                saveNotes();
+                updateEmptyState();
+            });
+            
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+            
+            li.appendChild(header);
+            li.appendChild(content);
+            li.appendChild(actions);
+            notesList.appendChild(li);
+        });
+    }
+    
+    updateEmptyState();
+}
+
+// Load on page ready
+document.addEventListener("DOMContentLoaded", loadNotes);
