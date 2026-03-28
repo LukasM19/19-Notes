@@ -341,3 +341,39 @@ const styleSheet = document.createElement('style');
 styleSheet.type = 'text/css';
 styleSheet.innerText = darkModeStyles;
 document.head.appendChild(styleSheet);
+
+// script.js
+
+// Dark mode functionality
+const toggleDarkMode = () => {
+    document.body.classList.toggle('dark-mode');
+};
+
+// Add a note
+const addNote = (text) => {
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    notes.push(text);
+    localStorage.setItem('notes', JSON.stringify(notes));
+};
+
+// Delete a note
+const deleteNote = (index) => {
+    const notes = JSON.parse(localStorage.getItem('notes'));
+    notes.splice(index, 1);
+    localStorage.setItem('notes', JSON.stringify(notes));
+};
+
+// Load notes from localStorage
+const loadNotes = () => {
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    notes.forEach((note, index) => {
+        // Assuming there's a function to render notes on the UI
+        renderNoteOnUI(note, index);
+    });
+};
+
+// Event listener for dark mode toggle
+document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
+
+// Load notes on page load
+document.addEventListener('DOMContentLoaded', loadNotes);
