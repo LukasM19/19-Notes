@@ -141,3 +141,24 @@ li:hover {
     box-shadow: 0 4px 8px var(--shadow-hover);
     transform: translateY(-2px);
 }
+
+.delete-btn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+}
+
+.delete-btn:hover {
+    background: #cc0000;
+}
+
+.delete-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
+}
