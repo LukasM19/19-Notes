@@ -11,10 +11,10 @@
 
 <h1>19 Notes</h1>
 
-<div class="note-app">
-    <textarea id="noteInput" placeholder="Write a note..."></textarea>
-    <button onclick="addNote()">Add Note</button>
-</div>
+<form class="note-app" onsubmit="addNote(event)">
+    <textarea id="noteInput" placeholder="Write a note..." autofocus></textarea>
+    <button type="submit" aria-label="Add a new note">Add Note</button>
+</form>
 
 <ul id="notesList"></ul>
 
