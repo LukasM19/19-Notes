@@ -271,3 +271,73 @@ function loadNotes() {
 
 // Load on page ready
 document.addEventListener("DOMContentLoaded", loadNotes);
+
+// Updated script.js with character count, search, edit, timestamps, and dark mode functionality
+
+let notes = [];
+
+function displayNotes() {
+    const notesContainer = document.getElementById('notes');
+    notesContainer.innerHTML = '';
+    notes.forEach((note, index) => {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'note';
+        noteDiv.innerHTML = `<p>${note.content}</p>\n                        <small>Last edited: ${note.timestamp}</small>\n                        <button onclick='editNote(${index})'>Edit</button>`;
+        notesContainer.appendChild(noteDiv);
+    });
+    updateCharacterCount();
+}
+
+function addNote(content) {
+    const timestamp = new Date().toISOString();
+    notes.push({ content, timestamp });
+    displayNotes();
+}
+
+function editNote(index) {
+    const newContent = prompt('Edit your note:', notes[index].content);
+    if (newContent !== null) {
+        notes[index].content = newContent;
+        notes[index].timestamp = new Date().toISOString();
+        displayNotes();
+    }
+}
+
+function searchNotes(query) {
+    return notes.filter(note => note.content.toLowerCase().includes(query.toLowerCase()));
+}
+
+function updateCharacterCount() {
+    const totalChars = notes.reduce((total, note) => total + note.content.length, 0);
+    document.getElementById('charCount').innerText = `Total Characters: ${totalChars}`;
+}
+
+function toggleDarkMode() {
+    const body = document.body;
+    body.classList.toggle('dark-mode');
+}
+
+document.getElementById('addNoteBtn').addEventListener('click', () => {
+    const noteContent = document.getElementById('noteText').value;
+    addNote(noteContent);
+    document.getElementById('noteText').value = '';
+});
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    const results = searchNotes(e.target.value);
+    displayResults(results);
+});
+
+function displayResults(results) {
+    // logic to display search results
+}
+
+// Initial call to display notes on load
+displayNotes();
+
+// Dark mode styles
+const darkModeStyles = `body.dark-mode { background-color: #333; color: white; }`;
+const styleSheet = document.createElement('style');
+styleSheet.type = 'text/css';
+styleSheet.innerText = darkModeStyles;
+document.head.appendChild(styleSheet);
