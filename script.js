@@ -72,6 +72,17 @@ function saveNotes() {
     localStorage.setItem('notes', JSON.stringify(notes));
 }
 
+function updateCharacterCount() {
+    const notesList = document.getElementById("notesList");
+    let total = 0;
+
+    notesList.querySelectorAll(".note-title, .note-content").forEach(el => {
+        total += el.textContent.length;
+    });
+
+    document.getElementById("charCount").textContent = total;
+}
+
 // Load notes from localStorage
 function loadNotes() {
     const saved = localStorage.getItem('notes');
